@@ -7,7 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <errno.h>
 
+#include <termios.h>
+#include <fcntl.h>
 
 
 
@@ -48,6 +51,8 @@ static float parse_gprmc_speed(const char *nmea_sentence) {
     return speed_knots * 1.852;
 }
 
+
+
 void neo6m_get_parse_data(const char *buffer, double *latitude, double *longitude, char *lat_hemisphere, char *lon_hemisphere, double *speedKmh) {
 
     //data adquisiton latitude and longtitude
@@ -69,7 +74,6 @@ void neo6m_get_parse_data(const char *buffer, double *latitude, double *longitud
 
         *lat_hemisphere = lat_h;
         *lon_hemisphere = lon_h;
-       
     }
 
     indexGP = strstr(buffer, "$GPRMC");
@@ -78,13 +82,38 @@ void neo6m_get_parse_data(const char *buffer, double *latitude, double *longitud
         *speedKmh = parse_gprmc_speed(indexGP);
     }
 
-    printf("Parsing GPS data: %lf / %c ^^ lon: %lf / %c, Speed: %lf km/h\n", *latitude, *lat_hemisphere, *longitude, *lon_hemisphere, *speedKmh);
+    //printf("Parsing GPS data: %lf / %c ^^ lon: %lf / %c, Speed: %lf km/h\n", *latitude, *lat_hemisphere, *longitude, *lon_hemisphere, *speedKmh);
+    
 }
 
 
 
 
+// Read data from the UART interface
+void neo6m_read_data(char* SERIAL_PORT, double *latitude, double *longitude, char *lat_hemisphere, char *lon_hemisphere, double *speedKmh) {
 
+    char read_buffer[256];
+    int num_bytes;
+    
+    // Clear the buffer for the read
+    memset(&read_buffer, '\0', sizeof(read_buffer));
+    
+    // Read operation blocks until conditions in VMIN/VTIME are met
+    num_bytes = read(SERIAL_PORT, &read_buffer, sizeof(read_buffer) - 1);
+
+    if (num_bytes < 0) {
+        printf("Error reading: %s\n", strerror(errno));
+    } else if (num_bytes == 0) {
+        printf("Read timeout occurred.\n");
+    } else {
+        printf("Read %i bytes. Received message: %s\n", num_bytes, read_buffer);
+
+        // Parse the GPS data
+        parse_gps_data(read_buffer, &latitude, &longitude, &lat_hemisphere, &lon_hemisphere, &speedKmh);
+            
+        printf("Parsed GPS data: Lat: %lf %c, Lon: %lf %c, Speed: %lf km/h\n", latitude, lat_hemisphere, longitude, lon_hemisphere, speedKmh);
+    }
+}
 
 
 
@@ -131,7 +160,8 @@ void set_tty_conf(struct termios *tty) {
     cfsetospeed(tty, B9600);
 }
 
-void gps_init(char* SERIAL_PORT) {
+
+void neo6m_init(char* SERIAL_PORT){
 
     // 1. Open the serial port device file
     // O_RDWR: Read/Write, O_NOCTTY: Prevents terminal control
@@ -145,6 +175,7 @@ void gps_init(char* SERIAL_PORT) {
 
     // 2. Configure the serial port using termios
     struct termios tty;
+
     if(tcgetattr(serial_port, &tty) != 0) {
         printf("Error %i from tcgetattr: %s\n", errno, strerror(errno));
         close(serial_port);
@@ -160,7 +191,7 @@ void gps_init(char* SERIAL_PORT) {
         close(serial_port);
         return 1;
     }
-
-
+    printf("Serial port %s initialized successfully.\n", SERIAL_PORT);
 }
 
+void neo6m_close_conn(char* SERIAL_PORT){close(SERIAL_PORT);}

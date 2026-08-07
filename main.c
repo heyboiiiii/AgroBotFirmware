@@ -2,14 +2,13 @@
 #include <string.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <termios.h>
 #include <unistd.h>
 #include <math.h>
 
 #include <signal.h>
 #include <unistd.h> // For sleep()
 
-#include "gps.h"
+#include "neo6m.h"
 
 
 
@@ -55,64 +54,54 @@ int main() {
     
     */
 
-    int fd;
-    const char *device = SPI_DEVICE;
-    unsigned char mode = SPI_MODE_0;
-    unsigned char bits = 8;
+    int fd; // SPI interface
+    const char *device = SPI_DEVICE; // Device
+    //unsigned char mode = NULL; // Spi mode
+    unsigned char bits = 8;// 8 bits
     unsigned int speed = 1000000; //1MHZ
 
-    lora_init(fd, device, mode, bits, speed);
+    lora_init(fd, device, NULL, bits, speed);//Initialize the SPI interface for the LoRa module
     
-    lora_get_version(fd, bits, speed);//shows the version of the LoRa chip
+    lora_get_version(fd, bits, speed); //Shows the version of the LoRa chip
+    
+    /*
 
-    // Mostrar los datos recibidos
-    //printf("Datos recibidos: 0x%02X 0x%02X\n", rx_buffer[0], rx_buffer[1]);
+    ******************************************************************************
+                            GPS NEO6M UART interface
+    ******************************************************************************
     
-    
-   
-    
+    */
 
-    
-
-    // Read data from the UART interface
-    char read_buffer[256];
-    int num_bytes;
-
-    double latitude, longitude, speedKmh;
+    double latitude, longitude; 
+    double speedKmh;
     char lat_hemisphere, lon_hemisphere;
 
-    printf("Listening for UART data...\n");
+    //printf("Listening for UART data...\n");
     
 
+    
     // Register the handler for SIGINT (Ctrl+C)
     signal(SIGINT, handle_ctrl_c);
 
+    
+    
     while (keep_running) {
-        // Clear the buffer for the read
-        memset(&read_buffer, '\0', sizeof(read_buffer));
-        // Read operation blocks until conditions in VMIN/VTIME are met
-        num_bytes = read(serial_port, &read_buffer, sizeof(read_buffer) - 1);
-
-        if (num_bytes < 0) {
-            printf("Error reading: %s\n", strerror(errno));
-        } else if (num_bytes == 0) {
-            printf("Read timeout occurred.\n");
-        } else {
-            printf("Read %i bytes. Received message: %s\n", num_bytes, read_buffer);
-
-            // Parse the GPS data
-            parse_gps_data(read_buffer, &latitude, &longitude, &lat_hemisphere, &lon_hemisphere, &speedKmh);
-            
-            printf("Parsed GPS data: Lat: %lf %c, Lon: %lf %c, Speed: %lf km/h\n", latitude, lat_hemisphere, longitude, lon_hemisphere, speedKmh);
-        }
+        
 
     }
 
     printf("Exiting gracefully...\n");
-    // Close the port
-    close(serial_port);
+    // Close the UART port
+    neo6m_close_conn(SERIAL_PORT);    
     // Close the SPI device
     //close(fd);
     return 0;
 }
 
+void lora_listening(){
+
+}
+
+void gps_listening(){
+
+}

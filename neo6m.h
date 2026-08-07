@@ -19,11 +19,27 @@
  * @param speedKmh Pointer to store the parsed speed in km/h.
  */
 
-void neo6m_get_parse_data(const char *buffer, double *latitude, double *longitude, char *lat_hemisphere, char *lon_hemisphere, double *speedKmh);
 
+void neo6m_get_parse_data(const char *buffer, double *latitude, double *longitude, char *lat_hemisphere, char *lon_hemisphere, double *speedKmh);
+/**
+ * @brief Initializes the NEO6M GPS module.
+ * @param SERIAL_PORT The serial port to which the GPS module is connected.
+ */
 void neo6m_init(char* SERIAL_PORT);
 
-void neo6m_read_data(int serial_port, char *buffer, size_t buffer_size);
 
+/**
+ * @brief Reads data from the NEO6M GPS module.
+ * @param serial_port The file descriptor of the serial port.
+ */
+void neo6m_read_data(char* SERIAL_PORT, double *latitude, double *longitude, char *lat_hemisphere, char *lon_hemisphere, double *speedKmh);
+
+
+
+/**
+ * @brief Closes the connection to the NEO6M GPS module.
+ * @param SERIAL_PORT The serial port to which the GPS module is connected.
+ */
+void neo6m_close_conn(char* SERIAL_PORT);
 
 #endif

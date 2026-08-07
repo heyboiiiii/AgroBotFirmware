@@ -159,7 +159,7 @@ void lora_spi_init(int fd, unsigned char device, unsigned char mode, unsigned ch
 
     
     // 2. Configurar el dispositivo SPI
-    
+    if(mode == NULL){mode=SPI_MODE_0;}
     // Configurar el modo (Polaridad y Fase del reloj)
     if (ioctl(fd, SPI_IOC_WR_MODE, &mode) < 0) {
         perror("Error al configurar el modo SPI");
