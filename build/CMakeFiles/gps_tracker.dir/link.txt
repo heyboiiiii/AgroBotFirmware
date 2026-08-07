@@ -1,0 +1,1 @@
+/usr/bin/cc CMakeFiles/gps_tracker.dir/main.c.o CMakeFiles/gps_tracker.dir/gps.c.o -o gps_tracker  -lm 

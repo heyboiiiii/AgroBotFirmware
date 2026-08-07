@@ -1,0 +1,3 @@
+/home/joa/Documents/AgroBotSensorMonitoringCode/build/CMakeFiles/gps_tracker.dir
+/home/joa/Documents/AgroBotSensorMonitoringCode/build/CMakeFiles/edit_cache.dir
+/home/joa/Documents/AgroBotSensorMonitoringCode/build/CMakeFiles/rebuild_cache.dir
